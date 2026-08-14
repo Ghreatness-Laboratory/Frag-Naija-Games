@@ -1,0 +1,5 @@
+import { createServerClient } from '@supabase/ssr';import { cookies } from 'next/headers';import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+export async function createServerSupabase(){const store=await cookies();return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,{cookies:{getAll(){return store.getAll()},setAll(cookiesToSet){cookiesToSet.forEach(({name,value,options})=>store.set(name,value,options))}}})}
+export function createServiceSupabase(){return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false,autoRefreshToken:false}})}
+export async function requireUser(){const supabase=await createServerSupabase();const {data:{user}}=await supabase.auth.getUser();return {supabase,user}}
+export async function requireAdmin(){const {supabase,user}=await requireUser();if(!user)return {supabase,user:null,profile:null,isAdmin:false};const {data:profile}=await supabase.from('profiles').select('*').eq('id',user.id).single();return {supabase,user,profile,isAdmin:profile?.role==='ADMIN'}}
