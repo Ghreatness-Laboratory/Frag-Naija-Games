@@ -1,0 +1,2 @@
+import { NextResponse } from 'next/server';import { createServerSupabase } from '@/lib/supabase/server';
+export async function GET(){const supabase=await createServerSupabase();const {data,error}=await supabase.from('players').select('*').eq('active',true).eq('game','TDM').order('created_at',{ascending:false});if(error)return NextResponse.json({error:error.message},{status:500});return NextResponse.json({players:data});}
